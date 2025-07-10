@@ -1,11 +1,31 @@
 import axios from 'axios';
 
-// Usa o proxy definido em frontend/package.json:
-//   "proxy": "http://localhost:3000"
-const API = axios.create({ baseURL: '/' });
 
-export const getUsers = () => API.get('/users');
-export const createUser = data => API.post('/users', data);
-export const getProducts = () => API.get('/products');
-export const getByCategory = cat => API.get(`/products/category/${cat}`);
-export const getReport = () => API.get('/reports');
+const apiPrincipal = axios.create({
+  baseURL: 'http://localhost:3000', 
+});
+
+const authApi = axios.create({
+  baseURL: 'http://localhost:4000',
+});
+
+
+apiPrincipal.interceptors.request.use(async (config) => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+
+
+export const login = (credentials) => authApi.post('/login', credentials);
+export const register = (userData) => authApi.post('/register', userData);
+
+
+
+export const getProducts = () => apiPrincipal.get('/products');
+export const getByCategory = (cat) => apiPrincipal.get(`/products/category/${cat}`);
+export const getReport = () => apiPrincipal.get('/reports');
+
